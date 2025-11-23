@@ -17,7 +17,7 @@ y es uno de los métodos numéricos explícitos más simples para resolver ecuac
 Se usa para aproximar soluciones de la ecuación de calor:
 
 $$  
-u_t = \alpha,u_{xx}  
+\alpha u_{xx} = u_t 
 $$
 
 La idea principal es reemplazar las derivadas por diferencias finitas:
@@ -51,11 +51,13 @@ Este esquema permite avanzar la solución en el tiempo con cálculos muy simples
 La ecuación de calor es **difusiva**: suaviza rápidamente la solución.  
 Ese suavizamiento natural “perdona” errores numéricos.
 
-FTCS es estable **solo si** se cumple la condición de estabilidad CFL:
+FTCS es estable **solo si** se cumple la condición de estabilidad [CFL](https://en.wikipedia.org/wiki/Courant%E2%80%93Friedrichs%E2%80%93Lewy_condition):
 
 $$ 
 r = \frac{\alpha \Delta t}{\Delta x^2} \le 0.5  
 $$
+![[Pasted image 20251123080816.png]]
+Fuente: https://www.youtube.com/watch?v=WBWY46ynRk0
 
 Si se respeta esta condición:
 
@@ -68,18 +70,18 @@ Si se respeta esta condición:
 
 Por eso FTCS es una opción razonable para la ecuación de calor.
 
-## 3. ¿Por qué FTCS NO funciona para la ecuación de onda?
+## 3. ¿Por qué FTCS NO funciona para la ecuación de **onda**?
 
 La ecuación de onda:
 
 $$
-u_{tt} = a^2, u_{xx}  
+a u_{xx}=u_{tt}  
 $$
 
-no es difusiva; es **hiperbólica**.  
+no es difusiva, es **hiperbólica**.  
 Transporta información mediante oscilaciones que NO se amortiguan.
 
-Cuando intentas aplicar FTCS, necesitas aproximar ( u_{tt} ), lo que lleva naturalmente a un esquema del tipo:
+Cuando intentas aplicar FTCS, necesitas aproximar $u_{tt}$, lo que lleva naturalmente a un esquema del tipo:
 
 $$
 u^{n+1}_i = 2u^{n}_i - u^{n-1}_i + c^2( u^n_{i+1} - 2u^n_i + u^n_{i-1})  
@@ -88,30 +90,17 @@ $$
 Este **NO es FTCS**, sino el método **Leapfrog** o “salto de rana”.  
 FTCS simplemente no puede aproximar de manera estable la segunda derivada en el tiempo.
 
----
-
 ## 4. ¿Qué pasa si usamos FTCS en la ecuación de onda?
-
 - el error no se disipa
-    
 - cualquier pequeña oscilación crece
-    
 - la solución explota numéricamente
-    
 - aparecen ondas no-físicas que amplifican ruido en cada paso de tiempo
-    
-- no existe un valor de ( $\Delta t$ ) que garantice estabilidad absoluta
-    
-
+- no existe un valor de $\Delta t$ que garantice estabilidad absoluta
 Mientras el calor “mata” las altas frecuencias, la onda las _amplifica_.  
 Por eso FTCS es **compatible con la física difusiva**, pero **incompatible con la física hiperbólica**.
-
----
-
-## 5. ¿Qué método SÍ funciona para la ecuación de onda?
+## 5. ¿Qué método si funciona para la ecuación de onda?
 
 El esquema estándar es **Leapfrog (centrado en tiempo)**:
-
 $$  
 u^{n+1}_i =  
 2u^n_i - u^{n-1}_i
@@ -119,33 +108,26 @@ u^{n+1}_i =
 - \left(\frac{a\Delta t}{\Delta x}\right)^2  
     \left(u^n_{i+1} - 2u^n_i + u^n_{i-1}\right)  
 $$
-    
-
 Y aquí la condición de estabilidad es:
-
 $$  
 \frac{a\Delta t}{\Delta x} \le 1  
 $$
-
 Este método respeta la física de propagación sin amortiguar ni soplar las oscilaciones.
 ![[Euler_leapfrog_comparison.gif|center]]
----
+![[Wave-2D-Gaussian-Mixed.gif|center]]
+Fuente: https://gist.github.com/TheBoyRoy05/ee488fea8a51204fa0da654f26b214b4
 ## Resumen
 
-|Propiedad|Ecuación de Calor|Ecuación de Onda|
-|---|---|---|
-|Tipo|Difusiva|Hiperbólica|
-|FTCS| Funciona, estable con CFL| Inestable para cualquier paso de tiempo|
-|Comportamiento físico|Suaviza|Oscila|
-|Método recomendado|FTCS, Crank–Nicolson|Leapfrog, Lax–Wendroff|
-
----
-
+| Propiedad             | Ecuación de Calor         | Ecuación de Onda                        |
+| --------------------- | ------------------------- | --------------------------------------- |
+| Tipo                  | Difusiva                  | Hiperbólica                             |
+| FTCS                  | Funciona, estable con CFL | Inestable para cualquier paso de tiempo |
+| Comportamiento físico | Suaviza                   | Oscila                                  |
+| Método recomendado    | FTCS, Crank–Nicolson      | Leapfrog, Lax–Wendroff                  |
 ## Takeaway
 - **FTCS funciona porque imita la física difusiva**: el método suaviza errores tal como la ecuación suaviza la temperatura.
 - **FTCS falla en la onda porque viola su física**: introduce amortiguamiento artificial o inestabilidad explosiva.
-- El método debe coincidir con la naturaleza de la ecuación que resuelves.
-
+- El método debe coincidir con la naturaleza de la ecuación.
 # Sources
 1.  https://en.wikipedia.org/wiki/FTCS_scheme
 2. https://www.youtube.com/watch?v=B4rziSNUpAA&t=854s
